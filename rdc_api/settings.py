@@ -143,8 +143,8 @@ USE_L10N = True
 USE_TZ = True
 
 
-COGNITO_USER_MODEL = 'api.User'
-
+COGNITO_USER_MODEL = "api.User"
+AUTH_USER_MODEL = 'api.User'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
