@@ -25,6 +25,10 @@ COGNITO_AWS_REGION = '<aws region>'  # 'eu-central-1'
 COGNITO_USER_POOL = '<user pool>'  # 'eu-central-1_xYzaq'
 COGNITO_AUDIENCE = '<client id>'
 
+COGNITO_PUBLIC_KEYS_CACHING_ENABLED = True
+COGNITO_PUBLIC_KEYS_CACHING_TIMEOUT = 60*60*24
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -139,7 +143,7 @@ USE_L10N = True
 USE_TZ = True
 
 
-AUTH_USER_MODEL = 'api.User'
+COGNITO_USER_MODEL = 'api.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
