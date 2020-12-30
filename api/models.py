@@ -1,5 +1,8 @@
-from django.db import models
+import uuid
+
+from django.db import models, IntegrityError
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+
 
 
 class UserManager(BaseUserManager):
@@ -18,6 +21,7 @@ class UserManager(BaseUserManager):
 
         user.set_password(password)
         user.save(using=self._db)
+
         return user
 
     def create_superuser(self, email, date_of_birth, password=None):
@@ -34,6 +38,38 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    def get_or_create_for_cognito(self, payload):
+        """Get any value from `payload` here
+        ipdb> pprint(payload)
+        {'aud': '159ufjrihgehb67sn373aotli7',
+        'auth_time': 1583503962,
+        'cognito:username': 'john-rambo',
+        'email': 'foggygiga@gmail.com',
+        'email_verified': True,
+        'event_id': 'd92a99c2-c49e-4312-8a57-c0dccb84f1c3',
+        'exp': 1583507562,
+        'iat': 1583503962,
+        'iss': 'https://cognito-idp.us-west-2.amazonaws.com/us-west-2_flCJaoDig',
+        'sub': '2e4790a0-35a4-45d7-b10c-ced79be22e94',
+        'token_use': 'id'}
+        """
+        cognito_id = payload['sub']
+
+        try:
+            return self.get(cognito_id=cognito_id)
+        except self.model.DoesNotExist:
+            pass
+
+        try:
+            user = self.create(
+                cognito_id=cognito_id,
+                email=payload['email'],
+                is_active=True)
+        except IntegrityError:
+            user = self.get(cognito_id=cognito_id)
+
+        return user
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
@@ -44,7 +80,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_of_birth = models.DateField()
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
-
+    cognito_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -68,6 +104,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+
+
 
 
 class Task(models.Model):
